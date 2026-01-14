@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kleinanzeigen Scraper</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'><rect width='1' height='1' fill='transparent'/></svg>">
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="NavBar">
+        <div class="NavBar-content">
+            <img src="logo.png" alt="Logo" class="NavBar-logo">
+            <div class="NavBar-title">Kleinanzeigen Scraper</div>
+            <div class="NavBar-links">
+                <a href="#makler" class="NavBar-link">Makler</a>
+                <a href="#url-generator" class="NavBar-link">URL Generator</a>
+                <a href="#suche" class="NavBar-link">Suche</a>
+                <a href="#ergebnisse" class="NavBar-link">Ergebnisse</a>
+                <a href="#status" class="NavBar-link">Status</a>
+                <a href="#export" class="NavBar-link">Export</a>
+            </div>
+            <div class="NavBar-info">
+                <span>Links: <strong id="headerLinksCount">0</strong></span>
+                <span>Makler: <strong id="headerMaklerCount">0</strong></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="Page">
+        <!-- Makler -->
+        <section id="makler" class="Page-section">
+            <div class="Page-section-header">
+                <h2 class="Page-title">Makler</h2>
+            </div>
+            <div class="Page-section-body">
+                <div class="FormRow">
+                    <input type="text" id="newMaklerName" class="FormInput" placeholder="Makler Name">
+                    <button id="addMaklerBtn" class="Button Button-primary">Hinzufügen</button>
+                </div>
+                <div id="maklerList" class="ListArea">
+                    <div class="Empty">Keine Makler</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- URL Generator -->
+        <section id="url-generator" class="Page-section">
+            <div class="Page-section-header">
+                <h2 class="Page-title">URL Generator</h2>
+            </div>
+            <div class="Page-section-body">
+                <div class="FormGrid">
+                    <input type="text" id="filterKategorie" class="FormInput" value="immobilien" placeholder="Kategorie">
+                    <input type="text" id="filterAnbieter" class="FormInput" value="privat" placeholder="Anbieter">
+                    <input type="text" id="filterAnzeige" class="FormInput" value="angebote" placeholder="Anzeige">
+                    <input type="text" id="filterPreis" class="FormInput" value="150000" placeholder="Preis">
+                    <input type="text" id="filterSuchbegriff" class="FormInput" value="haus" placeholder="Suchbegriff">
+                </div>
+                <textarea id="plzListInput" class="FormTextarea" rows="4" placeholder="PLZ (eine pro Zeile)"></textarea>
+                <div class="FormActions">
+                    <button id="generateURLsBtn" class="Button Button-primary">URLs generieren</button>
+                </div>
+                <div id="generatedURLsContainer" class="ResultBox">
+                    <div class="ResultBox-header">
+                        <span>Generierte URLs (<span id="generatedURLsCount">0</span>)</span>
+                        <button id="copyURLsBtn" class="Button Button-small">Kopieren</button>
+                    </div>
+                    <textarea id="generatedURLsOutput" class="FormTextarea" rows="5" readonly placeholder="Generierte URLs erscheinen hier"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- Suche -->
+        <section id="suche" class="Page-section">
+            <div class="Page-section-header">
+                <h2 class="Page-title">Suche</h2>
+            </div>
+            <div class="Page-section-body">
+                <div class="SearchArea">
+                    <label class="FormLabel">Makler auswählen</label>
+                    <div id="maklerSelection" class="SelectionArea">
+                        <div class="Empty">Keine Makler verfügbar</div>
+                    </div>
+                    <div class="SearchActions">
+                        <button id="searchMaklerBtn" class="Button Button-primary Button-large">Suche starten</button>
+                        <div class="SearchActions-secondary">
+                            <button id="clearLinksBtn" class="ButtonLink">Alle Links löschen</button>
+                            <button id="clearBlacklistBtn" class="ButtonLink">Blacklist leeren</button>
+                        </div>
+                    </div>
+                    <div class="DeleteOptions" style="margin-top: var(--space-16); padding-top: var(--space-16); border-top: 1px solid var(--divider);">
+                        <label class="FormLabel">Selektiv löschen</label>
+                        <div class="FormRow">
+                            <select id="deleteMaklerSelect" class="FormInput" style="flex: 1;">
+                                <option value="">Alle Makler</option>
+                            </select>
+                            <input type="number" id="deleteYear" class="FormInput FormInput-small" placeholder="Jahr">
+                            <input type="number" id="deleteMonth" class="FormInput FormInput-small" placeholder="Monat">
+                            <input type="number" id="deleteDay" class="FormInput FormInput-small" placeholder="Tag">
+                            <button id="deleteFilteredBtn" class="Button Button-secondary">Löschen</button>
+                        </div>
+                    </div>
+                    <div id="statusMessage" class="StatusMessage" style="display: none;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ergebnisse -->
+        <section id="ergebnisse" class="Page-section Page-section-main">
+            <div class="Page-section-header">
+                <h2 class="Page-title">Ergebnisse</h2>
+                <span class="Page-count" id="resultsPanelCount">0</span>
+            </div>
+            <div class="Page-section-body">
+                <!-- Filter -->
+                <div class="FilterArea">
+                    <button class="FilterToggle" id="filterToggle">
+                        <span>Filter</span>
+                        <span class="FilterIcon">▼</span>
+                    </button>
+                    <div class="FilterPanel" id="filterContent" style="display: none;">
+                        <div class="FilterGroup">
+                            <label class="FormLabel">Makler</label>
+                            <div id="filterMaklerSelection" class="FilterCheckboxes">
+                                <div class="Empty">Keine Makler</div>
+                            </div>
+                        </div>
+                        <div class="FilterGroup">
+                            <label class="FormLabel">Datum</label>
+                            <div class="FormRow">
+                                <input type="number" id="filterYear" class="FormInput FormInput-small" placeholder="Jahr">
+                                <input type="number" id="filterMonth" class="FormInput FormInput-small" placeholder="Monat">
+                                <input type="number" id="filterDay" class="FormInput FormInput-small" placeholder="Tag">
+                            </div>
+                        </div>
+                        <div class="FilterGroup">
+                            <label class="Checkbox">
+                                <input type="checkbox" id="filterLastSearch">
+                                <span>Nur letzte Suche</span>
+                            </label>
+                        </div>
+                            <div class="FilterActions">
+                                <button id="applyFilterBtn" class="Button Button-primary" type="button" onclick="if(typeof window.applyFilters==='function'){window.applyFilters();}else{console.error('applyFilters nicht verfügbar');}">Filter anwenden</button>
+                                <button id="clearAllFiltersBtn" class="ButtonLink">Zurücksetzen</button>
+                            </div>
+                    </div>
+                </div>
+
+                <!-- Links Liste -->
+                <div id="linksContainer" class="ResultsArea">
+                    <div class="Empty">
+                        <div class="Empty-icon">📋</div>
+                        <div>Keine Ergebnisse</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Status & Export -->
+        <div class="Page-grid">
+            <!-- Status -->
+            <section id="status" class="Page-section">
+                <div class="Page-section-header">
+                    <h2 class="Page-title">Status</h2>
+                </div>
+                <div class="Page-section-body">
+                    <div class="StatItem">
+                        <span class="StatLabel">Gesamt</span>
+                        <span class="StatValue" id="totalLinks">0</span>
+                    </div>
+                    <div class="StatItem">
+                        <span class="StatLabel">Neu</span>
+                        <span class="StatValue" id="newLinks">0</span>
+                    </div>
+                    <div class="StatItem">
+                        <span class="StatLabel">Gefiltert</span>
+                        <span class="StatValue" id="filteredLinks">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Export -->
+            <section id="export" class="Page-section">
+                <div class="Page-section-header">
+                    <h2 class="Page-title">Export</h2>
+                </div>
+                <div class="Page-section-body">
+                    <div class="FormRow" style="margin-bottom: var(--space-16);">
+                        <label class="FormLabel" style="margin-bottom: var(--space-8);">Makler (optional)</label>
+                        <select id="exportMaklerSelect" class="FormInput">
+                            <option value="">Alle Makler</option>
+                        </select>
+                    </div>
+                    <div class="FormActions">
+                        <button id="exportAllBtn" class="Button Button-primary Button-block">Alle exportieren</button>
+                        <button id="exportLastBtn" class="Button Button-secondary Button-block">Letzte Suche</button>
+                        <button id="exportMaklerBtn" class="Button Button-secondary Button-block">Nach Makler exportieren</button>
+                    </div>
+                    <div class="FormRow">
+                        <input type="number" id="exportFilterYear" class="FormInput FormInput-small" placeholder="Jahr" value="2026">
+                        <input type="number" id="exportFilterMonth" class="FormInput FormInput-small" placeholder="Monat" value="1">
+                        <input type="number" id="exportFilterDay" class="FormInput FormInput-small" placeholder="Tag" min="1" max="31">
+                        <button id="exportFilteredBtn" class="Button Button-primary">Nach Datum exportieren</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="url-generator.js"></script>
+    <script src="script.js"></script>
+    <script src="makler.js"></script>
+    <script>
+        // Smooth Scrolling für Navigation
+        document.querySelectorAll('.NavBar-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const navHeight = document.querySelector('.NavBar').offsetHeight;
+                    const targetPosition = targetElement.offsetTop - navHeight - 20;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Active Nav Link beim Scrollen
+        const sections = document.querySelectorAll('.Page-section');
+        const navLinks = document.querySelectorAll('.NavBar-link');
+        
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                const navHeight = document.querySelector('.NavBar').offsetHeight;
+                if (window.pageYOffset >= (sectionTop - navHeight - 100)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Filter Toggle
+        const filterToggle = document.getElementById('filterToggle');
+        const filterContent = document.getElementById('filterContent');
+        if (filterToggle && filterContent) {
+            filterToggle.addEventListener('click', function() {
+                const isOpen = filterContent.style.display !== 'none';
+                filterContent.style.display = isOpen ? 'none' : 'block';
+                this.querySelector('.FilterIcon').textContent = isOpen ? '▼' : '▲';
+            });
+        }
+
+        // Update Header Counts
+        function updateHeaderCounts() {
+            const headerLinksCount = document.getElementById('headerLinksCount');
+            const headerMaklerCount = document.getElementById('headerMaklerCount');
+            
+            if (headerLinksCount && typeof linksCountSpan !== 'undefined' && linksCountSpan) {
+                headerLinksCount.textContent = linksCountSpan.textContent || '0';
+            }
+            
+            if (headerMaklerCount && typeof maklerData !== 'undefined') {
+                headerMaklerCount.textContent = Object.keys(maklerData).length;
+            }
+        }
+
+        // Update Panel Counts
+        function updatePanelCounts() {
+            const resultsPanelCount = document.getElementById('resultsPanelCount');
+            
+            if (resultsPanelCount && typeof linksCountSpan !== 'undefined' && linksCountSpan) {
+                resultsPanelCount.textContent = linksCountSpan.textContent || '0';
+            }
+        }
+
+        // Watch for updates
+        setInterval(() => {
+            updateHeaderCounts();
+            updatePanelCounts();
+        }, 1000);
+        
+        // Aktualisiere Delete-Makler-Select und Export-Makler-Select nach dem Laden
+        setTimeout(() => {
+            if (typeof window.updateDeleteMaklerSelect === 'function') {
+                window.updateDeleteMaklerSelect();
+            }
+            if (typeof window.updateExportMaklerSelect === 'function') {
+                window.updateExportMaklerSelect();
+            }
+        }, 500);
+    </script>
+</body>
+</html>

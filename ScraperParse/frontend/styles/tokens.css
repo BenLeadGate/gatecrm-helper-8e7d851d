@@ -1,0 +1,69 @@
+/* ========================================
+   DESIGN TOKENS - Apple/macOS Style
+   ======================================== */
+
+:root {
+  /* Light Mode Colors */
+  --bg: #F5F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #F2F2F7;
+  --text: #1D1D1F;
+  --text-2: #6E6E73;
+  --divider: #E5E5EA;
+  --accent: #0071E3;
+  --success: #34C759;
+  --warning: #FF9F0A;
+  --danger: #FF3B30;
+  --shadow: rgba(0, 0, 0, 0.08);
+
+  /* Spacing Scale */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-56: 56px;
+  --space-64: 64px;
+  --space-80: 80px;
+  --space-120: 120px;
+
+  /* Border Radius */
+  --r-sm: 10px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  /* Typography */
+  --font-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  
+  /* Shadows */
+  --shadow-sm: 0 8px 24px var(--shadow);
+  --shadow-lg: 0 12px 32px var(--shadow);
+
+  /* Transitions */
+  --transition-base: 150ms ease-out;
+}
+
+/* Dark Mode - Wie apple.com */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #1D1D1F;
+    --surface-2: #2D2D30;
+    --text: #F5F5F7;
+    --text-2: #A1A1A6;
+    --divider: rgba(255, 255, 255, 0.06);
+    --accent: #0071E3;
+    --success: #30D158;
+    --warning: #FF9F0A;
+    --danger: #FF3B30;
+    --shadow: rgba(0, 0, 0, 0.4);
+  }
+}
+
